@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <!-- namespace : 간단하게 해도 됨. 단, mapper클래스를 사용하려면 완전한 이름의 클래스이름을 지정 -->
+<mapper namespace="com.study.free.dao.IFreeBoardDao">
+
+	<!-- 2. MyBatis에서 각 쿼리 호출(resultMap) -->
+  <resultMap type="com.study.free.vo.FreeBoardVO" id="freeBoardMap">
+  	<id column="bo_no"				property="boNo" />
+  	<result column="bo_title" 		property="boTitle" />
+  	<result column="bo_category" 	property="boCategory" />
+  	<result column="bo_category_nm" property="boCategoryNm" />
+  	<result column="bo_writer" 		property="boWriter" />
+  	<result column="bo_pass" 		property="boPass" />
+  	<result column="bo_content" 	property="boContent" />
+  	<result column="bo_ip" 			property="boIp" />
+  	<result column="bo_hit" 		property="boHit" />
+  	<result column="bo_reg_date" 	property="boRegDate" />
+  	<result column="bo_mod_date" 	property="boModDate" />
+  	<result column="bo_del_yn" 		property="boDelYn" />
+  	<collection property="attaches" 
+  				ofType="com.study.attach.vo.AttachVO"
+  				column="{atchParentNo=bo_no, atchCategory=bo_type}" 
+  				select="com.study.attach.dao.IAttachDao.getAttachByParentNoList" />
+  </resultMap>
+
+  <sql id="whereClause">
+  	<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(searchCategory)">
+  		AND bo_category = #{searchCategory}
+  	</if>
+  	<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(searchWord)">
+  		<choose>
+  			<when test='searchType == "T"'>AND bo_title LIKE '%' || #{searchWord} || '%'</when>
+  			<when test='searchType == "W"'>AND bo_writer LIKE '%' || #{searchWord} || '%'</when>
+  			<when test='searchType == "C"'>AND bo_content LIKE '%' || #{searchWord} || '%'</when>
+  			<otherwise>
+  				AND bo_title LIKE '%' || #{searchWord} || '%'
+  			</otherwise>
+  		</choose>
+  	</if>
+  </sql>
+
+  <select id="getBoardCount" resultType="int" parameterType="com.study.free.vo.FreeBoardSearchVO">
+    SELECT count(*)
+	  FROM free_board
+	 WHERE bo_del_yn = 'N'
+  	<include refid="whereClause" />
+  </select>
+  
+  <select id="getBoardList" resultType="com.study.free.vo.FreeBoardVO" parameterType="com.study.free.vo.FreeBoardSearchVO">
+  	<include refid="common.PRE_PAGING_SQL" />
+  	
+  	SELECT bo_no
+  			, bo_title 	 	
+  			, comm_nm as boCategoryNm  
+			, bo_writer	
+			, bo_pass
+			, bo_ip
+			, bo_hit
+			, TO_CHAR(bo_reg_date,'YYYY-MM-DD') AS bo_reg_date 
+			, TO_CHAR(bo_mod_date,'YYYY-MM-DD') AS bo_mod_date 
+	  FROM free_board a, comm_code b
+	 WHERE bo_category = b.comm_cd
+	   AND bo_del_yn = 'N'
+	   <include refid="whereClause" />
+	 ORDER BY bo_no DESC
+	<include refid="common.SUF_PAGING_SQL" />   
+  </select>
+  
+  <select id="getBoard" parameterType="int" resultMap="freeBoardMap">
+  	SELECT bo_no
+  		 , bo_title
+  		 , bo_pass		
+	     , (select comm_nm from comm_code where comm_cd = bo_category) as bo_category_nm 
+	     , bo_writer
+	     , bo_content		
+	     , bo_ip
+	     , bo_hit
+	     , TO_CHAR(bo_reg_date,'YYYY-MM-DD HH24:MI') as bo_reg_date		
+	     , TO_CHAR(bo_mod_date,'YYYY-MM-DD HH24:MI') as bo_mod_date		
+	     , bo_del_yn
+	     , 'FREE' AS bo_type
+	  FROM free_board                            										
+	 where bo_no = #{boNo} 
+  </select>
+  
+  <insert id="insertBoard" parameterType="com.study.free.vo.FreeBoardVO">
+	<selectKey resultType="int" keyProperty="boNo" order="BEFORE">
+	 <!-- 아래 select를 실행해서 나온 번호를 boNo에 셋팅하라.
+								INSERT 구문이 실행되기 전(BEFORE)에  -->
+        SELECT SEQ_FREE_BOARD.NEXTVAL FROM DUAL      
+    </selectKey>    
+    INSERT INTO free_board(
+    				bo_no, bo_title, bo_category
+    			  , bo_writer, bo_pass, bo_content
+    			  , bo_ip, bo_hit, bo_reg_date
+    			  , bo_del_yn
+   	   ) VALUES(   
+    	 		   #{boNo}, #{boTitle} , #{boCategory}
+    	 		 , #{boWriter}, #{boPass}, #{boContent}
+    	 		 , #{boIp}, 0 , SYSDATE  
+    	 		 , 'N' )
+  </insert>
+  
+  <update id="updateBoard" parameterType="com.study.free.vo.FreeBoardVO">
+  	<![CDATA[ 
+  	UPDATE free_board            
+	   SET bo_title    = #{boTitle}
+	     , bo_category = #{boCategory}
+	     , bo_content  = #{boContent}  	
+	     , bo_mod_date = sysdate 
+	 WHERE bo_no = #{boNo}
+	]]>		
+  </update>
+  
+  <delete id="deleteBoard" parameterType="com.study.free.vo.FreeBoardVO">
+	UPDATE free_board 
+	   SET bo_del_yn = 'Y'
+	 WHERE bo_no     = #{boNo}	
+  </delete>
+  
+  <update id="increaseHit" parameterType="int">
+	UPDATE free_board
+	   SET bo_hit = bo_hit+1
+	 WHERE bo_no  = #{boNo}
+  </update>
+  
+</mapper>

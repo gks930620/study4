@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <!-- namespace : 간단하게 해도 됨. 단, mapper클래스를 사용하려면 완전한 이름의 클래스이름을 지정 -->
+<mapper namespace="com.study.notice.dao.INoticeBoardDao">
+  <sql id="whereClause">
+  	<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(searchWord)">
+  		<choose>
+  			<when test='searchType == "T"'>AND no_title LIKE '%' || #{searchWord} || '%'</when>
+  			<when test='searchType == "C"'>AND no_contents LIKE '%' || #{searchWord} || '%'</when>
+  			<otherwise>
+  				AND no_title LIKE '%' || #{searchWord} || '%'
+  			</otherwise>
+  		</choose>
+  	</if>
+  </sql>
+
+  <select id="getBoardCount" resultType="int" parameterType="com.study.notice.vo.NoticeBoardSearchVO">
+    SELECT count(*)
+	  FROM notice
+	 WHERE 1=1
+  	<include refid="whereClause" />
+  </select>
+  
+  <select id="getBoardList" resultType="com.study.notice.vo.NoticeBoardVO" parameterType="com.study.notice.vo.NoticeBoardSearchVO">
+  	<include refid="common.PRE_PAGING_SQL" />
+	 
+	   SELECT no_no
+  			, no_top_yn
+  			, no_title
+  			, no_contents
+			, no_hit
+			, TO_CHAR(no_reg_date,'YYYY-MM-DD') AS no_reg_date 
+			, TO_CHAR(no_mod_date,'YYYY-MM-DD') AS no_mod_date 
+	   	 FROM (SELECT *
+	   	 		 FROM notice
+	   	 	 ORDER BY no_no DESC)
+	    WHERE 1=1
+	   <include refid="whereClause" />
+	  <!--  <include refid="whereClause" />
+	ORDER BY no_top_yn DESC, no_no DESC  -->
+	<include refid="common.SUF_PAGING_SQL" /> 
+  </select>
+  
+  <select id="getNoticeList" resultType="com.study.notice.vo.NoticeBoardVO" parameterType="com.study.notice.vo.NoticeBoardSearchVO">
+	  SELECT no_no
+  			, no_top_yn
+  			, no_title
+  			, no_contents
+			, no_hit
+			, TO_CHAR(no_reg_date,'YYYY-MM-DD') AS no_reg_date 
+			, TO_CHAR(no_mod_date,'YYYY-MM-DD') AS no_mod_date  
+	    FROM (SELECT * 
+	    		FROM notice 
+	    	   WHERE no_top_yn = 1 
+	    	ORDER BY no_no DESC)
+	    WHERE 1=1
+	 <include refid="whereClause" />
+  </select>
+  
+  <select id="getBoard" parameterType="int" resultType="com.study.notice.vo.NoticeBoardVO">
+  	SELECT no_no
+  		 , no_top_yn
+  		 , no_title
+	     , no_contents		
+	     , no_hit
+	     , TO_CHAR(no_reg_date,'YYYY-MM-DD HH24:MI') as no_reg_date		
+	     , TO_CHAR(no_mod_date,'YYYY-MM-DD HH24:MI') as no_mod_date		
+	  FROM notice                           										
+	 where no_no = #{noNo} 
+  </select>
+  
+  <insert id="insertBoard" parameterType="com.study.notice.vo.NoticeBoardVO">
+  	INSERT INTO notice (                         		
+		   no_no
+		   , no_top_yn
+		   , no_title
+		   , no_contents
+		   , no_hit
+		   , no_reg_date
+			) VALUES ( 
+				   SEQ_NOTICE.NEXTVAL 
+				   , #{noTopYn}
+				   , #{noTitle} 
+				   , #{noContents}						
+				   , 0 						
+				   , SYSDATE 
+				   ) 
+  </insert>
+  
+  <update id="updateBoard" parameterType="com.study.notice.vo.NoticeBoardVO">
+  	<![CDATA[ 
+  	UPDATE notice            
+	   SET no_title    = #{noTitle}
+	     , no_top_yn = #{noTopYn}
+	     , no_contents  = #{noContents}  	
+	     , no_mod_date = sysdate 
+	 WHERE no_no = #{noNo}
+	]]>		
+  </update>
+  
+  <delete id="deleteBoard" parameterType="com.study.notice.vo.NoticeBoardVO">
+	DELETE FROM notice
+	 WHERE no_no = #{noNo}
+  </delete>
+  
+  <update id="increaseHit" parameterType="int">
+	UPDATE notice
+	   SET no_hit = no_hit+1
+	 WHERE no_no  = #{noNo}
+  </update>
+  
+</mapper>

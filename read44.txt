@@ -1,0 +1,51 @@
+# read44.txt
+
+@MVC 어노테이션 기반 컨트롤러 
+ * @Controller
+ * @RequestMapping 
+ * @ModelAttribute 
+ * @RequestParam
+ - @SessionAttributes
+
+ - @GetMapping  = @RequestMapping(method = RequestMethod.GET)
+ - @PostMapping = @RequestMapping(method = RequestMethod.POST)
+ 
+
+ - RESTful 기반일 때 많이 사용 
+ * @RestController : REST 기반의 컨트롤러 지정 
+                    자동으로 모든 요청의 메서드는 반환은  @ResponseBody 붙은것과 동일
+                       
+ * @ResponseBody : 리턴객체를 그대로 응답의 본체로 내보내기  
+ * @PathVariable : 요청경로의 정보를 그대로 변수에 할당
+                   @RequestMapping(value = "/board/{no}/view", "/board/{no}/edit" 
+                 @PathVariable("no") int bo_no                    
+  
+ - @RequestBody  : 요청정보자체를 그대로 받아들이기  
+ 
+ ---------------------------------------------
+ jQuery : append, each, text()
+ 		, val() - 폼의 input계열의 값
+ 		, html(), show(), hide(), toggle()
+ 		, closest(), find()
+ 		, modal()
+ 		
+ 		click과 on 차이점 알아야함
+ 		ex) $(current).click(callback);
+ 			$(parent).on('click', current, callback);
+ 		
+ 		부트스트랩의 모달 창
+ 
+ ---------------------------------------------
+
+댓글 
+ 목록 : curPage 1 증가
+		10건이 안 되면 -> 더보기 버튼 숨김
+		
+ 등록 : 성공 -> 현재 목록을 갱신, 목록 영역을 지우고 다시 1페이지 정보 가져오기
+ 			 	또는 스크립트로 입력한 내용을 댓글 생성
+ 			 	
+ 수정 : 수정 화면 생성 (부트스트랩의 모달 창  사용)
+ 			저장 성공 -> 과제
+ 			
+ 삭제 : 성공 -> 해당 댓글 화면을 제거
+ 

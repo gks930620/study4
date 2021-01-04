@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beansProjectDescription>
+	<version>1</version>
+	<pluginVersion><![CDATA[3.9.13.202006180736-RELEASE]]></pluginVersion>
+	<configSuffixes>
+		<configSuffix><![CDATA[xml]]></configSuffix>
+	</configSuffixes>
+	<enableImports><![CDATA[true]]></enableImports>
+	<configs>
+		<config>src/main/resources/spring/step2.xml</config>
+		<config>src/main/resources/spring/step3.xml</config>
+		<config>src/main/resources/spring/context-datasource.xml</config>
+		<config>src/main/resources/spring/context-main.xml</config>
+		<config>src/main/resources/spring/context-transacion.xml</config>
+	</configs>
+	<autoconfigs>
+		<config>src/main/resources/spring/mvc-servlet.xml</config>
+	</autoconfigs>
+	<configSets>
+		<configSet>
+			<name><![CDATA[myweb]]></name>
+			<allowBeanDefinitionOverriding>true</allowBeanDefinitionOverriding>
+			<incomplete>false</incomplete>
+			<configs>
+				<config>src/main/resources/spring/context-datasource.xml</config>
+				<config>src/main/resources/spring/context-main.xml</config>
+				<config>src/main/resources/spring/context-transacion.xml</config>
+				<config>src/main/resources/spring/mvc-servlet.xml</config>
+			</configs>
+			<profiles>
+			</profiles>
+		</configSet>
+	</configSets>
+</beansProjectDescription>
